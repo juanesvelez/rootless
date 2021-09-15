@@ -1,0 +1,6 @@
+#todo se crea desde un contenedor de ubuntu y se debe instalar el nodejs, npm.
+docker build . -t cgmartinezceron/alpine_nodejs
+#se debe crear un workdir donde se va a alojar el index.js
+#instalar npm express en la carpeta de workdir
+#se debe levantar el servicio
+docker run -p 49160:8080 -d cgmartinezceron/alpine_nodejs

@@ -1,0 +1,22 @@
+#todo se crea desde un contenedor de ubuntu y se debe instalar el nodejs, npm.
+docker build . -t cgmartinezceron/rootless-ubuntu_apache
+docker run -p 80:80 --name rootless-ubuntu-apache -d cgmartinezceron/rootless-ubuntu-apache
+
+#ingresar al contenedor
+docker exec -it ubuntu_nodejs /bin/bash
+
+
+mkdir: cannot create directory '/var/run/apache2': Permission denied
+chown: changing ownership of '/var/lock/apache2.vCcx2lLvg3': Operation not permitted
+
+RUN set -x \
+    && addgroup \
+        --gid 10001 \
+        app \
+    && adduser \
+        --disable-password \
+        --gid 10001 \
+        --home /app \
+        --uid 10001 \
+        app \
+    && usermod -a -G www-data app

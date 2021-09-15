@@ -1,0 +1,8 @@
+#todo se crea desde un contenedor de ubuntu y se debe instalar el nodejs, npm.
+docker build . -t cgmartinezceron/ubuntu_nodejs
+#se debe crear un workdir donde se va a alojar el index.js
+#instalar npm express en la carpeta de workdir
+#se debe levantar el servicio
+docker run -p 3000:3000 --name ubuntu_nodejs -d cgmartinezceron/ubuntu-nodejs
+#ingresar al contenedor
+docker exec -it ubuntu_nodejs /bin/bash

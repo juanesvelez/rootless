@@ -1,0 +1,8 @@
+FROM node:14
+WORKDIR /app
+ADD package*.json ./
+ADD . .
+
+RUN npm install
+EXPOSE 8080
+CMD ["node", "server.js"]

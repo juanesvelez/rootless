@@ -1,0 +1,7 @@
+docker build -f "C:\Users\cgomezm\source\repos\apitest\apitest\Dockerfile" "C:\Users\cgomezm\source\repos\apitest" -t apitest:latest
+docker run -p 800:80 -p 440:443 --name test -d apitest:latest
+
+docker build . -t apitest
+docker run -p 800:80 -p 440:443 --name apitest -d apitest
+
+http://localhost:800/weatherforecast

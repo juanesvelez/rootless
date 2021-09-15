@@ -1,0 +1,91 @@
+docker build . -t rootless-apitest
+docker run --name rootless-apitest -p 800:80 -p 440:443 -d rootless-apitest
+
+http://localhost:800/weatherforecast
+
+FROM base AS final
+COPY --from=publish /app/publish .
+RUN chown nobody:nobody /app/*
+RUN chmod 777 -R /app/*
+USER nobody
+WORKDIR /app
+ENTRYPOINT ["dotnet", "apitest.dll"]
+
+Dockerfile que se ha trabajado con Juan
+
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS base
+WORKDIR /app
+RUN apk update && apk upgrade && apk add \
+    sudo
+EXPOSE 80
+#EXPOSE 443
+
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+WORKDIR /src
+COPY ["apitest/apitest.csproj", "apitest/"]
+RUN dotnet restore "apitest/apitest.csproj"
+COPY . .
+WORKDIR "/src/apitest"
+RUN dotnet build "apitest.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "apitest.csproj" -c Release -o /app/publish
+
+FROM base AS final
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+COPY --from=publish /app/publish .
+#RUN adduser --disabled-password \
+ #   -g '' docker \
+    #&& adduser docker sudo
+#RUN addgroup -g 1000 -S app && \
+#    adduser -u 1000 -S app -G app
+RUN addgroup -g 1000 -S app
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "$(pwd)" \
+    --ingroup "app" \
+    --no-create-home \
+    --uid 1001 \
+    "app"
+RUN echo 'app ALL=(ALL) NOPASSWD:ALL' >> \
+    /etc/sudoers
+RUN chmod 777 -R /app/*
+USER app
+WORKDIR /app
+CMD sudo /usr/bin/dotnet apitest.dll
+
+Dockerfile rootless 
+
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS base
+WORKDIR /app
+RUN apk update && apk upgrade && apk add \
+    libcap \
+    && setcap 'cap_net_bind_service=+ep' /usr/share/dotnet/dotnet
+EXPOSE 80
+#EXPOSE 443
+
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+WORKDIR /src
+COPY ["apitest/apitest.csproj", "apitest/"]
+RUN dotnet restore "apitest/apitest.csproj"
+COPY . .
+WORKDIR "/src/apitest"
+RUN dotnet build "apitest.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "apitest.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+RUN chown nobody:nobody -R /app
+USER nobody
+ENTRYPOINT ["dotnet", "apitest.dll"]
+
+Dockerfile without sh
+

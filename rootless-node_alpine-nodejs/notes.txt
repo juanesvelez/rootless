@@ -1,0 +1,13 @@
+#create the package.json
+#run npm install to get package-lock.json
+npm install
+#create server.js
+#create the Dockerfile
+docker build . -t cgmartinezceron/rootless-alpine-nodejs
+docker run --name rootless-alpine-nodejs -p 80:8080 -d cgmartinezceron/rootless-alpine-nodejs
+
+docker exec -it rootless-alpine-nodejs /bin/bash
+
+#se hacen pruebas con el usuario nobody, linea original:
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+RUN mkdir -p /home/node/app/node_modules && chown -R nobody:nogroup /home/node/app
